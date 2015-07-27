@@ -55,21 +55,21 @@ The original data on the variables consist of time series readings/estimates for
 The order of steps performed in the analysis is slightly different from the steps listed in the requirements.  
 
 * We start by reading in the feature labels and the activity ID labels provided in the data set.
-```
+```R
 library(dplyr)
 features <- read.csv("../UCI_HAR_Dataset/features.txt", sep = " ", header = FALSE)
 features[,2] <- as.character(features[,2])
 activitylabels <- read.csv("../UCI_HAR_Dataset/activity_labels.txt", sep = " ", header = FALSE)
 ```
 From the original features, only the mean and standard deviation variables will selected - `mean()` and `std()`. The selected variables names were also changed a little bit to look less technical.
-```
+```R
 attributeids <- c(grep("mean()", features[,2]), grep("std()", features[,2]))
 features[,2] <- gsub("-", "_", features[,2])
 features[,2] <- gsub("\\()", "", features[,2])
 ```
 
 * The next step was to read in the time series data for the selected variables (mean and std) from both the test set and the training set. The names of the variables for the imported data frames were also changed to reflect the change from above.
-```
+```R
 ## Test data set
 testactivityids <- as.numeric(readLines("../UCI_HAR_Dataset/test/y_test.txt"))
 testsubjectids <- as.numeric(readLines("../UCI_HAR_Dataset/test/subject_test.txt"))
@@ -91,20 +91,20 @@ traindata$subject <- trainsubjectids
 ```
 
 * The two data sets were then merged and ordered by subject and by activity.
-```
+```R
 combodata <- rbind(traindata, testdata)
 combodata <- arrange(combodata, subject, activity)
 ```
 
 * This made it easier to perform the last step of the analysis, which was creating a new data frame, consisting of the means of each of the variables over the time series, for each subject, for each activity. The new data frame was written to the file `tidy_data.txt`.
-```
+```R
 by_subject_activity <- group_by(combodata, subject, activity)
 means_summary <- summarise_each(by_subject_activity, funs(mean))
 write.table(means_summary, file = "tidy_data.txt", row.names = FALSE)
 ```
 
 * Lastly, the R script `generate_vardescription.R` creates a text file `tidy_features.txt` which contains a list of all the variable names included in the final tidy data set. This was useful to copy and paste at the end of this CodeBook file. Before copying and pasting, however, one more preprocessing step was necessary and performed in Vim inside the terminal (linux), in order for the text to be a numbered list and follow the Markdown syntax:
-```
+```VimL
 :%s/ /. /g
 :%s/_/\\_/g
 ```
